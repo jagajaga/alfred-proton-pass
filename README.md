@@ -1,13 +1,32 @@
-# alfred-proton-pass
+<p align="center">
+  <img src="icon.png" width="128" height="128" alt="Proton Pass for Alfred" />
+</p>
 
-An [Alfred](https://www.alfredapp.com/) workflow for [Proton Pass](https://proton.me/pass)
-that drives the official [`pass-cli`](https://protonpass.github.io/pass-cli/) — the same
-way [`chrisgrieser/alfred-pass`](https://github.com/chrisgrieser/alfred-pass) drives the
-classic `pass` command.
+<h1 align="center">alfred-proton-pass</h1>
+
+<p align="center">
+  An <a href="https://www.alfredapp.com/">Alfred</a> workflow for
+  <a href="https://proton.me/pass">Proton Pass</a>, driving the official
+  <a href="https://protonpass.github.io/pass-cli/"><code>pass-cli</code></a>.
+</p>
+
+<p align="center">
+  <a href="https://github.com/jagajaga/alfred-proton-pass/releases/latest">
+    <img alt="latest release" src="https://img.shields.io/github/v/release/jagajaga/alfred-proton-pass?color=6c4ff7&label=download&style=for-the-badge" />
+  </a>
+  &nbsp;
+  <a href="LICENSE">
+    <img alt="MIT license" src="https://img.shields.io/badge/license-MIT-6c4ff7?style=for-the-badge" />
+  </a>
+</p>
+
+---
+
+UX modeled after [`chrisgrieser/alfred-pass`](https://github.com/chrisgrieser/alfred-pass) — same keyword + modifier-key feel, ported to the Proton Pass backend.
 
 ## Install
 
-1. Install and log in to the Proton Pass CLI:
+1. Install the Proton Pass CLI and sign in:
 
    ```sh
    brew install pass-cli
@@ -27,11 +46,11 @@ Inside the `pp` results:
 
 | Key | Action |
 |---|---|
-| ⏎ | Copy **password** (clipboard auto-clears after 45 s) |
-| ⌘⏎ | Copy **username/email** |
-| ⌥⏎ | Copy **TOTP code** |
-| ⌃⏎ | Open the item's first **URL** |
-| ⇧⏎ | Show item **details** (password masked) |
+| <kbd>↩</kbd> | Copy **password** (clipboard auto-clears after 45 s) |
+| <kbd>⌘</kbd><kbd>↩</kbd> | Copy **username/email** |
+| <kbd>⌥</kbd><kbd>↩</kbd> | Copy **TOTP code** |
+| <kbd>⌃</kbd><kbd>↩</kbd> | Open the item's first **URL** |
+| <kbd>⇧</kbd><kbd>↩</kbd> | Show item **details** (password masked) |
 
 ## Configuration
 
@@ -57,21 +76,19 @@ Workflow variables (Alfred → Workflows → Proton Pass → `[𝗑]`):
    `pass-cli item view --field …` or `pass-cli item totp` to fetch exactly the
    value being copied.
 
-Actual secrets are **never** written to disk by this workflow — every copy/TOTP
-action fetches the value live from `pass-cli`.
+Actual secrets are **never** written to disk by this workflow — every
+copy / TOTP / open-URL action fetches the value live from `pass-cli`.
 
 ## Building from source
 
 ```sh
-cd alfred-proton-pass
-zip -r "../Proton Pass.alfredworkflow" . -x "cache/*" -x "*.DS_Store" -x "*.lock"
+zip -r "Proton Pass.alfredworkflow" \
+  info.plist icon.png INSTRUCTIONS.md scripts/ \
+  -x "*.DS_Store" -x "scripts/__pycache__/*"
 ```
 
-## Credits
-
-UX modeled after [`chrisgrieser/alfred-pass`](https://github.com/chrisgrieser/alfred-pass).
-Code is independent — the `pass-cli` backend is unrelated to GPG-based `pass`.
+Drop the resulting `Proton Pass.alfredworkflow` into Alfred.
 
 ## License
 
-MIT
+[MIT](LICENSE).

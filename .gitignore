@@ -1,3 +1,4 @@
 .DS_Store
-alfred-proton-pass/cache/
+cache/
 *.lock
+*.alfredworkflow
