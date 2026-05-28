@@ -1,0 +1,232 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>bundleid</key>
+	<string>com.jagajaga.alfred-proton-pass</string>
+	<key>category</key>
+	<string>Tools</string>
+	<key>connections</key>
+	<dict>
+		<key>fce457aa-a53c-41c7-b1fd-59d1f36ab15c</key>
+		<array>
+			<dict>
+				<key>destinationuid</key>
+				<string>d1b4a59b-0244-4b08-904d-7ced8ff27740</string>
+				<key>modifiers</key>
+				<integer>0</integer>
+				<key>modifiersubtext</key>
+				<string></string>
+				<key>vitoclose</key>
+				<false/>
+			</dict>
+		</array>
+		<key>b027734d-89a4-4e74-9b87-c25cd894ce7a</key>
+		<array>
+			<dict>
+				<key>destinationuid</key>
+				<string>1bdbaf9c-111a-484e-b66f-ea37544058da</string>
+				<key>modifiers</key>
+				<integer>0</integer>
+				<key>modifiersubtext</key>
+				<string></string>
+				<key>vitoclose</key>
+				<false/>
+			</dict>
+		</array>
+	</dict>
+	<key>createdby</key>
+	<string>jagajaga</string>
+	<key>description</key>
+	<string>Search Proton Pass items, copy passwords/usernames/TOTP, generate passwords — via the official pass-cli.</string>
+	<key>disabled</key>
+	<false/>
+	<key>name</key>
+	<string>Proton Pass</string>
+	<key>objects</key>
+	<array>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>alfredfiltersresults</key>
+				<false/>
+				<key>alfredfiltersresultsmatchmode</key>
+				<integer>0</integer>
+				<key>argumenttreatemptyqueryasnil</key>
+				<false/>
+				<key>argumenttrimmode</key>
+				<integer>0</integer>
+				<key>argumenttype</key>
+				<integer>1</integer>
+				<key>escaping</key>
+				<integer>0</integer>
+				<key>keyword</key>
+				<string>pp</string>
+				<key>queuedelaycustom</key>
+				<integer>3</integer>
+				<key>queuedelayimmediatelyinitially</key>
+				<true/>
+				<key>queuedelaymode</key>
+				<integer>0</integer>
+				<key>queuemode</key>
+				<integer>1</integer>
+				<key>runningsubtext</key>
+				<string>Searching Proton Pass…</string>
+				<key>script</key>
+				<string>./scripts/filter.py "$1"</string>
+				<key>scriptargtype</key>
+				<integer>1</integer>
+				<key>scriptfile</key>
+				<string></string>
+				<key>subtext</key>
+				<string>Search your Proton Pass vaults</string>
+				<key>title</key>
+				<string>Search Proton Pass</string>
+				<key>type</key>
+				<integer>0</integer>
+				<key>withspace</key>
+				<true/>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.input.scriptfilter</string>
+			<key>uid</key>
+			<string>fce457aa-a53c-41c7-b1fd-59d1f36ab15c</string>
+			<key>version</key>
+			<integer>3</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>concurrently</key>
+				<false/>
+				<key>escaping</key>
+				<integer>0</integer>
+				<key>script</key>
+				<string>./scripts/action.sh "$1"</string>
+				<key>scriptargtype</key>
+				<integer>1</integer>
+				<key>scriptfile</key>
+				<string></string>
+				<key>type</key>
+				<integer>0</integer>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.action.script</string>
+			<key>uid</key>
+			<string>d1b4a59b-0244-4b08-904d-7ced8ff27740</string>
+			<key>version</key>
+			<integer>2</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>argumenttype</key>
+				<integer>1</integer>
+				<key>keyword</key>
+				<string>ppgen</string>
+				<key>subtext</key>
+				<string>Generate a random password and copy it</string>
+				<key>text</key>
+				<string>Generate password (length)</string>
+				<key>title</key>
+				<string>Generate Proton Pass password</string>
+				<key>withspace</key>
+				<true/>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.input.keyword</string>
+			<key>uid</key>
+			<string>b027734d-89a4-4e74-9b87-c25cd894ce7a</string>
+			<key>version</key>
+			<integer>1</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>concurrently</key>
+				<false/>
+				<key>escaping</key>
+				<integer>0</integer>
+				<key>script</key>
+				<string>./scripts/generate.sh "$1"</string>
+				<key>scriptargtype</key>
+				<integer>1</integer>
+				<key>scriptfile</key>
+				<string></string>
+				<key>type</key>
+				<integer>0</integer>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.action.script</string>
+			<key>uid</key>
+			<string>1bdbaf9c-111a-484e-b66f-ea37544058da</string>
+			<key>version</key>
+			<integer>2</integer>
+		</dict>
+	</array>
+	<key>readme</key>
+	<string>Proton Pass for Alfred
+
+Requires Proton Pass CLI (pass-cli) on your PATH. Install:
+  brew install pass-cli
+  pass-cli login
+
+Keywords:
+  pp           Search your Proton Pass items
+                 ⏎  copy password (clipboard auto-clears after 45s)
+                 ⌘⏎ copy username/email
+                 ⌥⏎ copy TOTP code
+                 ⌃⏎ open first URL in browser
+                 ⇧⏎ show item details (no secrets revealed)
+  ppgen N      Generate a random N-character password (default 20) and copy
+
+Workflow variables:
+  PP_CACHE_TTL    Seconds before re-indexing items (default 60)
+  PP_CLIP_CLEAR   Seconds before auto-clearing the clipboard (default 45; 0 = never)
+</string>
+	<key>uidata</key>
+	<dict>
+		<key>fce457aa-a53c-41c7-b1fd-59d1f36ab15c</key>
+		<dict>
+			<key>xpos</key>
+			<integer>40</integer>
+			<key>ypos</key>
+			<integer>40</integer>
+		</dict>
+		<key>d1b4a59b-0244-4b08-904d-7ced8ff27740</key>
+		<dict>
+			<key>xpos</key>
+			<integer>280</integer>
+			<key>ypos</key>
+			<integer>40</integer>
+		</dict>
+		<key>b027734d-89a4-4e74-9b87-c25cd894ce7a</key>
+		<dict>
+			<key>xpos</key>
+			<integer>40</integer>
+			<key>ypos</key>
+			<integer>180</integer>
+		</dict>
+		<key>1bdbaf9c-111a-484e-b66f-ea37544058da</key>
+		<dict>
+			<key>xpos</key>
+			<integer>280</integer>
+			<key>ypos</key>
+			<integer>180</integer>
+		</dict>
+	</dict>
+	<key>variables</key>
+	<dict>
+		<key>PP_CACHE_TTL</key>
+		<string>60</string>
+		<key>PP_CLIP_CLEAR</key>
+		<string>45</string>
+	</dict>
+	<key>variablesdontexport</key>
+	<array/>
+	<key>version</key>
+	<string>0.1.0</string>
+	<key>webaddress</key>
+	<string></string>
+</dict>
+</plist>
