@@ -14,7 +14,7 @@ classic `pass` command.
    pass-cli login
    ```
 
-2. Download [`Proton Pass.alfredworkflow`](Proton%20Pass.alfredworkflow) and double-click it.
+2. Download the latest **Proton Pass.alfredworkflow** from the [Releases](https://github.com/jagajaga/alfred-proton-pass/releases/latest) page and double-click it.
 
 ## Usage
 
