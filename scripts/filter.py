@@ -50,12 +50,14 @@ def load_cache() -> dict:
         return {"items": [], "errors": [f"cache unreadable: {e}"]}
 
 
-def score(title: str, query: str) -> int:
-    """Higher is better; 0 means no match."""
-    if not query:
+def score_token(text: str, token: str) -> int:
+    """Score a single token against a single field. Higher = better; 0 = miss."""
+    if not token:
         return 1
-    t = title.lower()
-    q = query.lower()
+    if not text:
+        return 0
+    t = text.lower()
+    q = token.lower()
     if t == q:
         return 1000
     if t.startswith(q):
@@ -73,6 +75,54 @@ def score(title: str, query: str) -> int:
     if i == len(q):
         return 10
     return 0
+
+
+# Per-field weights, applied to each token's score against that field.
+# Title wins ties, login is half-weight, URL is third (URL usually contains
+# the domain that's already in the title, so it's mostly a fallback).
+FIELD_WEIGHTS = (("title", 1.0), ("login", 0.5), ("url", 0.33))
+
+
+def item_score(item: dict, tokens: list[str]) -> int:
+    """Score an item against an already-tokenized query.
+
+    All tokens must match SOME field for the item to qualify; the per-token
+    score is the best (weighted) score across fields, and the item's total
+    is the sum across tokens. A small bonus is added when different tokens
+    match different fields — that's the case where a multi-word query like
+    `goog bloop` really pays off.
+    """
+    if not tokens:
+        return 1
+
+    fields = {f: (item.get(f) or "") for f, _ in FIELD_WEIGHTS}
+    weights = dict(FIELD_WEIGHTS)
+
+    total = 0
+    matched_fields: set[str] = set()
+    for tok in tokens:
+        best = 0
+        best_field = None
+        for f, _ in FIELD_WEIGHTS:
+            s = int(score_token(fields[f], tok) * weights[f])
+            if s > best:
+                best = s
+                best_field = f
+        if best == 0:
+            return 0  # token didn't match any field → item is out
+        total += best
+        if best_field:
+            matched_fields.add(best_field)
+
+    # Bonus when tokens spread across different fields (rewards `goog bloop`
+    # hitting title + login over a single field carrying everything).
+    if len(matched_fields) > 1:
+        total += 50 * (len(matched_fields) - 1)
+    return total
+
+
+def tokenize(q: str) -> list[str]:
+    return [t for t in q.lower().split() if t]
 
 
 TYPE_ICONS = {
@@ -110,19 +160,17 @@ def main() -> int:
         emit_login_required(errors[0])
         return 0
 
+    tokens = tokenize(query)
     matches = []
     for it in items_in:
-        s_title = score(it.get("title", ""), query)
-        # Match login too, but at a lower weight so title hits still win.
-        s_login = score(it.get("login", ""), query) // 2 if it.get("login") else 0
-        s = max(s_title, s_login)
+        s = item_score(it, tokens)
         if s == 0:
             continue
         matches.append((s, it))
 
     # With a query: sort by score desc, then title. Empty query: keep cache
     # order (most-recently-modified first).
-    if query:
+    if tokens:
         matches.sort(key=lambda x: (-x[0], x[1].get("title", "").lower()))
     matches = matches[:50]
 
