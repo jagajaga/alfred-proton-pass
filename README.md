@@ -52,6 +52,21 @@ Inside the `pp` results:
 | <kbd>⌃</kbd><kbd>↩</kbd> | Open the item's first **URL** |
 | <kbd>⇧</kbd><kbd>↩</kbd> | Show item **details** (password masked) |
 
+### Search
+
+Each item is matched on its **title**, **login** (username/email), and **URL**.
+
+The query is split into space-separated tokens, and **every token must match
+at least one field**. That lets you narrow by combining a site with an
+account — e.g. `pp goog work` matches the `google.com` entry by title and
+your work address by login, and `pp git personal` picks the `github.com`
+entry tied to that account. Tokens that land on different fields rank higher,
+so the entry matching both your terms floats to the top.
+
+Per token, matches are scored exact → prefix → word-boundary → substring →
+subsequence (so `ghb` still finds `github.com`). Title hits outrank login
+hits, which outrank URL hits.
+
 ## Configuration
 
 Workflow variables (Alfred → Workflows → Proton Pass → `[𝗑]`):

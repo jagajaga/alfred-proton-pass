@@ -15,7 +15,9 @@ pass-cli login
 
 ## Usage
 
-Search items across all your vaults via the `pp` keyword. The list matches both the item title and its saved login (username or email).
+Search items across all your vaults via the `pp` keyword. Each item is matched on its title, login (username or email), and URL.
+
+The query is split into space-separated tokens, and every token must match at least one field. So `pp goog work` finds the `google.com` item matched by both its title and your work login, and `pp git personal` narrows a `github.com` entry by account. Single-word queries work exactly as before.
 
 * <kbd>↩</kbd> Copy the password to the clipboard. The clipboard is automatically cleared after 45 seconds.
 * <kbd>⌘</kbd><kbd>↩</kbd> Copy the username/email.
