@@ -35,6 +35,27 @@ UX modeled after [`chrisgrieser/alfred-pass`](https://github.com/chrisgrieser/al
 
 2. Download the latest **Proton Pass.alfredworkflow** from the [Releases](https://github.com/jagajaga/alfred-proton-pass/releases/latest) page and double-click it.
 
+### Staying logged in
+
+The default `pass-cli login` (web) session is short-lived and will eventually
+expire — when it does, the workflow shows a *"not logged in"* item instead of
+results. For a long-lived session (up to a year), authenticate with a
+**Personal Access Token**:
+
+```sh
+# create a token once (while logged in); expirations: 1d 1w 1m 3m 6m 1y
+pass-cli personal-access-token create --name alfred --expiration 1y
+# → prints  pst_<token>::<key>  (shown only once)
+
+# log in with it — establishes a session that lasts as long as the token
+pass-cli login --pat 'pst_<token>::<key>'
+```
+
+Renew before it lapses with `pass-cli personal-access-token renew`. Treat the
+token like a password — don't store it in the workflow; the one-time
+`login --pat` is enough, since the session is cached under
+`~/.config/pass-cli/.session/`.
+
 ## Usage
 
 | Keyword | What it does |

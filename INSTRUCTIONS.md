@@ -13,6 +13,15 @@ pass-cli login
 
 `pass-cli` keeps an authenticated session, so the workflow can fetch passwords on demand without prompting.
 
+The default web session is short-lived. For a long-lived session (up to a year), log in with a Personal Access Token instead:
+
+```sh
+pass-cli personal-access-token create --name alfred --expiration 1y
+pass-cli login --pat 'pst_<token>::<key>'
+```
+
+If the session ever lapses, the workflow shows a "not logged in" item — press Enter on it to re-authenticate.
+
 ## Usage
 
 Search items across all your vaults via the `pp` keyword. Each item is matched on its title, login (username or email), and URL.
