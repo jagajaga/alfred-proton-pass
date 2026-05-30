@@ -37,24 +37,60 @@ UX modeled after [`chrisgrieser/alfred-pass`](https://github.com/chrisgrieser/al
 
 ### Staying logged in
 
-The default `pass-cli login` (web) session is short-lived and will eventually
-expire — when it does, the workflow shows a *"not logged in"* item instead of
-results. For a long-lived session (up to a year), authenticate with a
-**Personal Access Token**:
+The default `pass-cli login` (web) session is short-lived and eventually
+expires — when it does, the workflow shows a *"not logged in"* item instead of
+results. For a session that lasts as long as you want (up to a year),
+authenticate with a **Personal Access Token (PAT)**.
+
+> A fresh PAT has **no vault access** until you grant it, and PATs can only be
+> created/granted from a normal (non-PAT) session. Run this whole block while
+> logged in normally — it creates the token, grants it, logs in with it, and
+> wipes the value, all without printing it.
 
 ```sh
-# create a token once (while logged in); expirations: 1d 1w 1m 3m 6m 1y
-pass-cli personal-access-token create --name alfred --expiration 1y
-# → prints  pst_<token>::<key>  (shown only once)
+# 0. be on a normal session (NOT a --pat one)
+pass-cli login            # or: pass-cli login --interactive
 
-# log in with it — establishes a session that lasts as long as the token
-pass-cli login --pat 'pst_<token>::<key>'
+# 1. create the token and capture it into a variable (never printed).
+#    pick any lifetime: 1d 1w 1m 3m 6m 1y
+TOKEN=$(pass-cli personal-access-token create --name alfred --expiration 1y --output json \
+  | python3 -c 'import json,sys
+def find(o):
+    if isinstance(o,str): return o if o.startswith("pst_") else None
+    if isinstance(o,(list,dict)):
+        for v in (o.values() if isinstance(o,dict) else o):
+            r=find(v)
+            if r: return r
+print(find(json.load(sys.stdin)) or "")')
+[ -n "$TOKEN" ] && echo "token captured" || echo "FAILED to capture token"
+
+# 2. grant it read access to every vault (covers multiple / same-named vaults)
+for sid in $(pass-cli vault list --output json \
+      | python3 -c 'import json,sys;[print(v["share_id"]) for v in json.load(sys.stdin)["vaults"]]'); do
+  pass-cli personal-access-token access grant \
+    --personal-access-token-name alfred --share-id "$sid" --role viewer
+done
+
+# 3. switch to the long-lived PAT session, then wipe the variable
+pass-cli logout
+pass-cli login --pat "$TOKEN"
+unset TOKEN
+
+# 4. verify it can see your vaults (should print a number > 0)
+pass-cli vault list --output json \
+  | python3 -c 'import json,sys;print(len(json.load(sys.stdin)["vaults"]),"vaults visible")'
 ```
 
-Renew before it lapses with `pass-cli personal-access-token renew`. Treat the
-token like a password — don't store it in the workflow; the one-time
-`login --pat` is enough, since the session is cached under
-`~/.config/pass-cli/.session/`.
+**Notes**
+
+- Different lifetime? Swap `1y` in step 1 for `1d`, `1w`, `1m`, `3m`, or `6m`.
+- **Any vault you create later** won't be visible until you re-run step 2 for it.
+- Renew before it lapses with `pass-cli personal-access-token renew`.
+- Use a unique `--name`; grant/login by name is ambiguous if two tokens share
+  one. List with `pass-cli personal-access-token list` and remove extras with
+  `pass-cli personal-access-token delete --personal-access-token-id <id>`.
+- Treat the token like a password — don't store it in the workflow. The session
+  is cached under `~/.config/pass-cli/.session/`.
 
 ## Usage
 

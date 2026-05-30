@@ -13,14 +13,32 @@ pass-cli login
 
 `pass-cli` keeps an authenticated session, so the workflow can fetch passwords on demand without prompting.
 
-The default web session is short-lived. For a long-lived session (up to a year), log in with a Personal Access Token instead:
+The default web session is short-lived. For a long-lived session (up to a year), log in with a Personal Access Token instead. Note that a fresh token has **no vault access** until you grant it, so the create, grant, and login steps all matter:
 
 ```sh
-pass-cli personal-access-token create --name alfred --expiration 1y
-pass-cli login --pat 'pst_<token>::<key>'
+# 1. create the token and capture it (lifetime: 1d 1w 1m 3m 6m 1y)
+TOKEN=$(pass-cli personal-access-token create --name alfred --expiration 1y --output json \
+  | python3 -c 'import json,sys
+def find(o):
+    if isinstance(o,str): return o if o.startswith("pst_") else None
+    if isinstance(o,(list,dict)):
+        for v in (o.values() if isinstance(o,dict) else o):
+            r=find(v)
+            if r: return r
+print(find(json.load(sys.stdin)) or "")')
+
+# 2. grant it read access to every vault
+for sid in $(pass-cli vault list --output json \
+      | python3 -c 'import json,sys;[print(v["share_id"]) for v in json.load(sys.stdin)["vaults"]]'); do
+  pass-cli personal-access-token access grant --personal-access-token-name alfred --share-id "$sid" --role viewer
+done
+
+# 3. log in with the token, then wipe the variable
+pass-cli logout
+pass-cli login --pat "$TOKEN"; unset TOKEN
 ```
 
-If the session ever lapses, the workflow shows a "not logged in" item — press Enter on it to re-authenticate.
+The full version (with verification and notes) is in the project README. If the session ever lapses, the workflow shows a "not logged in" item — press Enter on it to re-authenticate.
 
 ## Usage
 
