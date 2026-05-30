@@ -35,12 +35,12 @@ if ! flock -n 9 2>/dev/null; then
 fi
 
 if ! command -v pass-cli >/dev/null 2>&1; then
-  echo '{"items":[],"error":"pass-cli not found in PATH"}' >"$CACHE_FILE"
+  echo '{"items":[],"errors":["pass-cli not found in PATH"]}' >"$CACHE_FILE"
   exit 0
 fi
 
 if ! pass-cli info >/dev/null 2>&1; then
-  echo '{"items":[],"error":"not logged in (run: pass-cli login)"}' >"$CACHE_FILE"
+  echo '{"items":[],"errors":["not logged in (run: pass-cli login)"]}' >"$CACHE_FILE"
   exit 0
 fi
 

@@ -153,7 +153,11 @@ def main() -> int:
     query = " ".join(sys.argv[1:]).strip()
     data = load_cache()
 
+    # Accept both "errors" (list) and a legacy singular "error" (string) so a
+    # stale cache from an older build still surfaces the real reason.
     errors = data.get("errors") or []
+    if not errors and data.get("error"):
+        errors = [data["error"]]
     items_in = data.get("items") or []
 
     if not items_in and errors:
