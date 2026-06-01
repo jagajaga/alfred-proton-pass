@@ -41,9 +41,21 @@ def load_cache() -> dict:
     if not CACHE_FILE.exists():
         run_indexer(force=True)
     else:
+        try:
+            current = json.loads(CACHE_FILE.read_text())
+        except Exception:
+            current = {}
         age = time.time() - CACHE_FILE.stat().st_mtime
         if age > TTL:
-            run_indexer(background=True)
+            # If we have usable items, refresh in the background and show the
+            # (slightly stale) items now — fast. If the cache is empty or holds
+            # only an error (e.g. a "not logged in" left over from before you
+            # re-authenticated), there's nothing useful to show, so rebuild
+            # synchronously and self-heal on this very query.
+            if current.get("items"):
+                run_indexer(background=True)
+            else:
+                run_indexer(force=True)
     try:
         return json.loads(CACHE_FILE.read_text())
     except Exception as e:
