@@ -153,7 +153,7 @@ def emit_login_required(message: str) -> None:
     print(json.dumps({
         "items": [{
             "title": "Proton Pass: not logged in",
-            "subtitle": f"{message} — press Enter to run `pass-cli login` in Terminal",
+            "subtitle": f"{message} — press Enter to run `pass-cli login` in your default terminal",
             "arg": "login|||",
             "valid": True,
             "icon": {"path": "icon.png"},
