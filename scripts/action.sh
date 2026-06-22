@@ -51,6 +51,9 @@ case "$action" in
 command_dir="\$(dirname "\$0")"
 rm -f "\$0"
 rmdir "\$command_dir" 2>/dev/null || true
+# logout first so this also recovers a session that reports authenticated but
+# can no longer decrypt vaults (plain login fails with "Already authenticated").
+$quoted_pass_cli_path logout 2>/dev/null || true
 exec $quoted_pass_cli_path login
 SH
     chmod +x "$command_file"
