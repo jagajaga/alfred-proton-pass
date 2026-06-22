@@ -45,9 +45,28 @@ if ! pass-cli info >/dev/null 2>&1; then
 fi
 
 tmp="$(mktemp)"
-trap 'rm -f "$tmp"' EXIT
+vault_err="$(mktemp)"
+trap 'rm -f "$tmp" "$vault_err"' EXIT
 
-vaults_json="$(pass-cli vault list --output json 2>/dev/null || echo '{"vaults":[]}')"
+# Capture stdout and stderr separately. `vault list` can exit 0 yet print
+# per-share decryption errors to stderr and return an empty list — e.g. when
+# the session metadata is valid but the key passphrases are missing. We must
+# not let that masquerade as "you have no items".
+vaults_json="$(pass-cli vault list --output json 2>"$vault_err" || echo '{"vaults":[]}')"
+
+vault_count="$(printf '%s' "$vaults_json" | python3 -c 'import json,sys
+try: print(len(json.load(sys.stdin).get("vaults",[])))
+except Exception: print(0)' 2>/dev/null)"
+
+if [ "${vault_count:-0}" -le 0 ] && [ -s "$vault_err" ]; then
+  if grep -qiE 'passphrase|share key|decrypt|authenticated' "$vault_err"; then
+    echo '{"items":[],"errors":["session can'"'"'t decrypt vaults — run: pass-cli logout && pass-cli login"]}' >"$CACHE_FILE"
+  else
+    msg="$(head -1 "$vault_err" | tr -d '"' | cut -c1-160)"
+    printf '{"items":[],"errors":["vault list failed: %s"]}\n' "$msg" >"$CACHE_FILE"
+  fi
+  exit 0
+fi
 
 python3 - "$vaults_json" >"$tmp" <<'PY'
 import json, subprocess, sys

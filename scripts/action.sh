@@ -37,10 +37,12 @@ copy_transient() {
 
 case "$action" in
   login)
+    # logout first so this also recovers a session that reports authenticated
+    # but can no longer decrypt vaults ("Already authenticated" otherwise).
     /usr/bin/osascript <<'OSA' >/dev/null 2>&1
 tell application "Terminal"
   activate
-  do script "pass-cli login"
+  do script "pass-cli logout 2>/dev/null; pass-cli login"
 end tell
 OSA
     exit 0
