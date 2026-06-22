@@ -37,14 +37,36 @@ copy_transient() {
 
 case "$action" in
   login)
-    # logout first so this also recovers a session that reports authenticated
-    # but can no longer decrypt vaults ("Already authenticated" otherwise).
-    /usr/bin/osascript <<'OSA' >/dev/null 2>&1
-tell application "Terminal"
-  activate
-  do script "pass-cli logout 2>/dev/null; pass-cli login"
-end tell
-OSA
+    pass_cli_path="$(command -v pass-cli || true)"
+    if [[ -z "$pass_cli_path" ]]; then
+      notify "Proton Pass" "pass-cli not found in PATH"
+      exit 0
+    fi
+
+    command_dir="$(mktemp -d "${TMPDIR:-/tmp}/proton-pass-login.XXXXXX")"
+    command_file="$command_dir/login.command"
+    quoted_pass_cli_path="$(printf '%q' "$pass_cli_path")"
+    cat >"$command_file" <<SH
+#!/bin/bash
+command_dir="\$(dirname "\$0")"
+rm -f "\$0"
+rmdir "\$command_dir" 2>/dev/null || true
+# logout first so this also recovers a session that reports authenticated but
+# can no longer decrypt vaults (plain login fails with "Already authenticated").
+$quoted_pass_cli_path logout 2>/dev/null || true
+exec $quoted_pass_cli_path login
+SH
+    chmod +x "$command_file"
+    /usr/bin/open "$command_file" || {
+      notify "Proton Pass" "Could not open terminal for login"
+      rm -rf "$command_dir"
+      exit 0
+    }
+    (
+      sleep 3600
+      rm -rf "$command_dir"
+    ) >/dev/null 2>&1 &
+    disown 2>/dev/null || true
     exit 0
     ;;
 
