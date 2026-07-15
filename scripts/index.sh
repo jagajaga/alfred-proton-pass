@@ -13,7 +13,7 @@ PATH="/opt/homebrew/bin:/usr/local/bin:$PATH"
 CACHE_DIR="${alfred_workflow_cache:-$(dirname "$0")/../cache}"
 CACHE_FILE="$CACHE_DIR/index.json"
 LOCK_FILE="$CACHE_DIR/index.lock"
-TTL="${PP_CACHE_TTL:-60}"
+TTL="${PP_CACHE_TTL:-300}"
 
 mkdir -p "$CACHE_DIR"
 
@@ -69,7 +69,13 @@ if [ "${vault_count:-0}" -le 0 ] && [ -s "$vault_err" ]; then
 fi
 
 python3 - "$vaults_json" >"$tmp" <<'PY'
-import json, subprocess, sys
+import json, os, subprocess, sys
+
+# --show-secrets decrypts every secret in a vault to surface usernames, which
+# can be slow on large vaults. Give it a generous window (override with
+# PP_LIST_TIMEOUT); the plain listing used as a fallback is fast.
+SHOW_SECRETS_TIMEOUT = int(os.environ.get("PP_LIST_TIMEOUT", "60"))
+PLAIN_TIMEOUT = int(os.environ.get("PP_LIST_TIMEOUT", "60")) // 2 + 15
 
 vaults = json.loads(sys.argv[1]).get("vaults", [])
 
@@ -82,20 +88,26 @@ for v in vaults:
     name = v["name"]
     share_id = v["share_id"]
     try:
-        # --show-secrets gives us usernames/emails/urls in one call. We strip
-        # passwords/TOTP below so the cache never holds actual secrets.
-        cmd = ["pass-cli", "item", "list", "--share-id", share_id,
-               "--output", "json", "--show-secrets"]
-        res = subprocess.run(cmd, capture_output=True, text=True, timeout=30)
+        # --show-secrets gives usernames/emails/urls (stripped below, so the
+        # cache never holds real secrets). It can be slow on a big vault, so if
+        # it times out or is rejected (e.g. an agent session), fall back to the
+        # fast plain listing — the vault's items still get indexed, just without
+        # login/url enrichment. Only a genuinely failed vault becomes a warning.
+        base = ["pass-cli", "item", "list", "--share-id", share_id, "--output", "json"]
+        res = None
+        try:
+            res = subprocess.run(base + ["--show-secrets"],
+                                 capture_output=True, text=True,
+                                 timeout=SHOW_SECRETS_TIMEOUT)
+            if res.returncode != 0:
+                res = None
+        except subprocess.TimeoutExpired:
+            res = None
+        if res is None:
+            res = subprocess.run(base, capture_output=True, text=True,
+                                 timeout=PLAIN_TIMEOUT)
         if res.returncode != 0:
-            # Fall back to no-secrets listing if --show-secrets is rejected
-            # (e.g. agent session).
-            res = subprocess.run(
-                ["pass-cli", "item", "list", "--share-id", share_id, "--output", "json"],
-                capture_output=True, text=True, timeout=30,
-            )
-        if res.returncode != 0:
-            errors.append(f"{name}: {res.stderr.strip()}")
+            errors.append(f"{name}: {res.stderr.strip()[:160]}")
             continue
         data = json.loads(res.stdout)
         for it in data.get("items", []) or []:

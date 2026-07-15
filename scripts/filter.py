@@ -19,7 +19,7 @@ from pathlib import Path
 HERE = Path(__file__).resolve().parent
 CACHE_DIR = Path(os.environ.get("alfred_workflow_cache") or HERE.parent / "cache")
 CACHE_FILE = CACHE_DIR / "index.json"
-TTL = int(os.environ.get("PP_CACHE_TTL", "60"))
+TTL = int(os.environ.get("PP_CACHE_TTL", "300"))
 
 
 def run_indexer(force: bool = False, background: bool = False) -> None:

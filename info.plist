@@ -181,7 +181,8 @@ Keywords:
   ppgen N      Generate a random N-character password (default 20) and copy
 
 Workflow variables:
-  PP_CACHE_TTL    Seconds before re-indexing items (default 60)
+  PP_CACHE_TTL    Seconds before re-indexing items (default 300)
+  PP_LIST_TIMEOUT Seconds allowed per vault when listing items (default 60)
   PP_CLIP_CLEAR   Seconds before auto-clearing the clipboard (default 45; 0 = never)
 </string>
 	<key>uidata</key>
@@ -218,6 +219,8 @@ Workflow variables:
 	<key>variables</key>
 	<dict>
 		<key>PP_CACHE_TTL</key>
+		<string>300</string>
+		<key>PP_LIST_TIMEOUT</key>
 		<string>60</string>
 		<key>PP_CLIP_CLEAR</key>
 		<string>45</string>

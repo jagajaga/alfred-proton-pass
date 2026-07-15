@@ -128,8 +128,11 @@ hits, which outrank URL hits.
 
 Workflow variables (Alfred → Workflows → Proton Pass → `[𝗑]`):
 
-- `PP_CACHE_TTL` — seconds before the item index is re-fetched (default `60`).
+- `PP_CACHE_TTL` — seconds before the item index is re-fetched (default `300`).
   Refresh runs in the background; only the very first query after install blocks on it.
+- `PP_LIST_TIMEOUT` — seconds allowed per vault when listing items (default `60`).
+  Large vaults can be slow to enrich with usernames; if a vault exceeds this, the
+  workflow falls back to a fast title-only listing for it rather than dropping it.
 - `PP_CLIP_CLEAR` — seconds before the workflow clears the clipboard
   (default `45`; `0` disables). Clearing only happens if the clipboard still
   holds the value the workflow put there.
