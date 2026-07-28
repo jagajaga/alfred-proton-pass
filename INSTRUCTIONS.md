@@ -7,7 +7,7 @@ Search your [Proton Pass](https://proton.me/pass) vaults from Alfred via the off
 Install the Proton Pass CLI and sign in once:
 
 ```sh
-brew install pass-cli
+brew install proton-pass-cli
 pass-cli login
 ```
 

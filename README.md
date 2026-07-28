@@ -29,7 +29,7 @@ UX modeled after [`chrisgrieser/alfred-pass`](https://github.com/chrisgrieser/al
 1. Install the Proton Pass CLI and sign in:
 
    ```sh
-   brew install pass-cli
+   brew install proton-pass-cli
    pass-cli login
    ```
 
