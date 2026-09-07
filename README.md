@@ -136,6 +136,16 @@ Workflow variables (Alfred → Workflows → Proton Pass → `[𝗑]`):
 - `PP_CLIP_CLEAR` — seconds before the workflow clears the clipboard
   (default `45`; `0` disables). Clearing only happens if the clipboard still
   holds the value the workflow put there.
+- `PP_UPDATE_INTERVAL` — seconds between background update checks (default
+  `86400`, i.e. daily; `0` disables auto-update).
+- `PP_REPO` — `owner/repo` the updater checks (default `jagajaga/alfred-proton-pass`).
+
+### Auto-update
+
+The workflow checks its GitHub releases in the background about once a day. When
+a newer version is published, it downloads the `.alfredworkflow` and opens it —
+Alfred then shows its import dialog for you to confirm (nothing installs
+silently). Set `PP_UPDATE_INTERVAL=0` to turn this off.
 
 ## How it works
 

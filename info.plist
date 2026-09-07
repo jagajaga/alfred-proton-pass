@@ -184,6 +184,7 @@ Workflow variables:
   PP_CACHE_TTL    Seconds before re-indexing items (default 300)
   PP_LIST_TIMEOUT Seconds allowed per vault when listing items (default 60)
   PP_CLIP_CLEAR   Seconds before auto-clearing the clipboard (default 45; 0 = never)
+  PP_UPDATE_INTERVAL Seconds between background update checks (default 86400; 0 = off)
 </string>
 	<key>uidata</key>
 	<dict>
@@ -224,11 +225,13 @@ Workflow variables:
 		<string>60</string>
 		<key>PP_CLIP_CLEAR</key>
 		<string>45</string>
+		<key>PP_UPDATE_INTERVAL</key>
+		<string>86400</string>
 	</dict>
 	<key>variablesdontexport</key>
 	<array/>
 	<key>version</key>
-	<string>0.2.5</string>
+	<string>0.2.6</string>
 	<key>webaddress</key>
 	<string></string>
 </dict>

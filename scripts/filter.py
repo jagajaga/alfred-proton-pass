@@ -20,6 +20,27 @@ HERE = Path(__file__).resolve().parent
 CACHE_DIR = Path(os.environ.get("alfred_workflow_cache") or HERE.parent / "cache")
 CACHE_FILE = CACHE_DIR / "index.json"
 TTL = int(os.environ.get("PP_CACHE_TTL", "300"))
+UPDATE_STAMP = CACHE_DIR / "last_update_check"
+UPDATE_INTERVAL = int(os.environ.get("PP_UPDATE_INTERVAL", "86400"))  # daily; 0 disables
+
+
+def maybe_check_update() -> None:
+    """Spawn the self-updater in the background, at most once per interval."""
+    if UPDATE_INTERVAL <= 0:
+        return
+    try:
+        if UPDATE_STAMP.exists() and (time.time() - UPDATE_STAMP.stat().st_mtime) < UPDATE_INTERVAL:
+            return
+        CACHE_DIR.mkdir(parents=True, exist_ok=True)
+        UPDATE_STAMP.touch()
+        subprocess.Popen(
+            [str(HERE / "update.sh")],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            start_new_session=True,
+        )
+    except Exception:
+        pass
 
 
 def run_indexer(force: bool = False, background: bool = False) -> None:
@@ -163,6 +184,7 @@ def emit_login_required(message: str) -> None:
 
 def main() -> int:
     query = " ".join(sys.argv[1:]).strip()
+    maybe_check_update()
     data = load_cache()
 
     # Accept both "errors" (list) and a legacy singular "error" (string) so a
