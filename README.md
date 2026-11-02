@@ -130,6 +130,8 @@ Workflow variables (Alfred → Workflows → Proton Pass → `[𝗑]`):
 
 - `PP_CACHE_TTL` — seconds before the item index is re-fetched (default `300`).
   Refresh runs in the background; only the very first query after install blocks on it.
+- `PP_ERROR_CACHE_TTL` — seconds before a failed index (e.g. *not logged in*) is
+  retried (default `10`), so a momentary pass-cli hiccup doesn't stick for the full TTL.
 - `PP_LIST_TIMEOUT` — seconds allowed per vault when listing items (default `60`).
   Large vaults can be slow to enrich with usernames; if a vault exceeds this, the
   workflow falls back to a fast title-only listing for it rather than dropping it.

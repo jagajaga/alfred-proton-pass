@@ -1,0 +1,31 @@
+#!/bin/bash
+# Fake pass-cli for tests. Behaviour is driven by files in $FAKE_DIR:
+#   info_fail_count  - number of `info` calls that should still fail (decremented)
+#   sleep            - seconds to sleep inside `vault list` (to hold the indexer open)
+# Every invocation is appended to $FAKE_DIR/calls.log.
+set -u
+: "${FAKE_DIR:?FAKE_DIR must be set}"
+echo "$*" >>"$FAKE_DIR/calls.log"
+case "$1" in
+  info)
+    n=0
+    [[ -f "$FAKE_DIR/info_fail_count" ]] && n="$(cat "$FAKE_DIR/info_fail_count")"
+    if (( n > 0 )); then
+      echo $((n - 1)) >"$FAKE_DIR/info_fail_count"
+      echo "fake: session refresh in progress" >&2
+      exit 1
+    fi
+    echo "logged in as fake@example.com"
+    ;;
+  vault)
+    [[ -f "$FAKE_DIR/sleep" ]] && sleep "$(cat "$FAKE_DIR/sleep")"
+    echo '{"vaults":[{"share_id":"s1","name":"Personal"}]}'
+    ;;
+  item)
+    echo '{"items":[{"id":"item1","share_id":"s1","state":"Active","title":"GitHub","item_type":"login","modify_time":"2026-01-01T00:00:00Z"}]}'
+    ;;
+  *)
+    echo "fake pass-cli: unknown command $*" >&2
+    exit 2
+    ;;
+esac
