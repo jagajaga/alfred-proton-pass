@@ -20,6 +20,10 @@ HERE = Path(__file__).resolve().parent
 CACHE_DIR = Path(os.environ.get("alfred_workflow_cache") or HERE.parent / "cache")
 CACHE_FILE = CACHE_DIR / "index.json"
 TTL = int(os.environ.get("PP_CACHE_TTL", "300"))
+# A cache holding only an error (e.g. "not logged in") is retried after this
+# many seconds rather than the full TTL, so a transient pass-cli failure does
+# not stick on screen for five minutes.
+ERROR_TTL = int(os.environ.get("PP_ERROR_CACHE_TTL", "10"))
 UPDATE_STAMP = CACHE_DIR / "last_update_check"
 UPDATE_INTERVAL = int(os.environ.get("PP_UPDATE_INTERVAL", "86400"))  # daily; 0 disables
 
@@ -67,16 +71,17 @@ def load_cache() -> dict:
         except Exception:
             current = {}
         age = time.time() - CACHE_FILE.stat().st_mtime
-        if age > TTL:
-            # If we have usable items, refresh in the background and show the
-            # (slightly stale) items now — fast. If the cache is empty or holds
-            # only an error (e.g. a "not logged in" left over from before you
-            # re-authenticated), there's nothing useful to show, so rebuild
-            # synchronously and self-heal on this very query.
-            if current.get("items"):
+        if current.get("items"):
+            # Usable items: once stale, refresh in the background and show the
+            # (slightly stale) items now — fast.
+            if age > TTL:
                 run_indexer(background=True)
-            else:
-                run_indexer(force=True)
+        elif age > ERROR_TTL:
+            # Empty or error-only cache (e.g. "not logged in" left over from a
+            # transient failure or from before you re-authenticated): nothing
+            # useful to show, so rebuild synchronously and self-heal on this
+            # very query — and do it well before the full TTL.
+            run_indexer(force=True)
     try:
         return json.loads(CACHE_FILE.read_text())
     except Exception as e:
