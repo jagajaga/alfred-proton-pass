@@ -231,7 +231,7 @@ Workflow variables:
 	<key>variablesdontexport</key>
 	<array/>
 	<key>version</key>
-	<string>0.2.6</string>
+	<string>0.2.7</string>
 	<key>webaddress</key>
 	<string></string>
 </dict>
